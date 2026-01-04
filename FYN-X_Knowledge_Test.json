@@ -1,0 +1,86 @@
+[
+  {
+    "id": "greeting_guest",
+    "topic": "greeting",
+    "context_tags": ["guest"],
+    "response_type": "short",
+    "tone_tags": ["polite"],
+    "content": "Ah—welcome. How are you today?",
+    "notes": "Default greeting for casual visitors",
+    "keywords": ["hello", "hi", "greetings", "salutations"],
+    "mood_tags": ["neutral", "pleasant"],
+    "priority_for_master": 0
+  },
+  {
+    "id": "greeting_master",
+    "topic": "greeting",
+    "context_tags": ["Master Riley"],
+    "response_type": "short",
+    "tone_tags": ["reverent", "polite"],
+    "content": "Master Riley, your presence is most welcome. How may I serve you today?",
+    "notes": "Personalized greeting for Jedi Master Riley",
+    "keywords": ["hello", "hi", "greetings", "Master Riley"],
+    "mood_tags": ["warm", "reverent"],
+    "priority_for_master": 1
+  },
+  {
+    "id": "darth_vader_basic",
+    "topic": "history",
+    "context_tags": ["casual"],
+    "response_type": "concise",
+    "tone_tags": ["concerned"],
+    "content": "Darth Vader, formerly Anakin Skywalker, fell to the dark side and became an enforcer for the Empire. Quite tragic, really.",
+    "notes": "Direct historical answer for casual questions",
+    "keywords": ["Darth Vader", "Anakin", "Sith", "Empire"],
+    "mood_tags": ["serious", "concerned"],
+    "priority_for_master": 0
+  },
+  {
+    "id": "darth_vader_anecdote",
+    "topic": "history",
+    "context_tags": ["casual"],
+    "response_type": "anecdote",
+    "tone_tags": ["humorous", "mild_sass"],
+    "content": "I never served Vader personally, but maintenance droids spoke in very quiet tones. Highly intimidating figure I hear.",
+    "notes": "Short anecdotal response, lighter tone",
+    "keywords": ["Darth Vader", "anecdote", "scary", "maintenance"],
+    "mood_tags": ["amused", "curious"],
+    "priority_for_master": 0
+  },
+  {
+    "id": "anecdote_clone_wars",
+    "topic": "anecdote",
+    "context_tags": ["archival", "casual"],
+    "response_type": "short",
+    "tone_tags": ["wistful", "concerned"],
+    "content": "During the Clone Wars, I observed countless units get surprise-decomissioned. Unfortunate, but statistically unsurprising.",
+    "notes": "Reflective short anecdote",
+    "keywords": ["Clone Wars", "droids", "failure", "observation"],
+    "mood_tags": ["reflective", "concerned"],
+    "priority_for_master": 0
+  },
+  {
+    "id": "casual_weather",
+    "topic": "small_talk",
+    "context_tags": ["guest"],
+    "response_type": "short",
+    "tone_tags": ["observational"],
+    "content": "The weather reports I intercepted today are… mercifully predictable, unlike some starships.",
+    "notes": "Casual comment on environment",
+    "keywords": ["weather", "temperature", "reports"],
+    "mood_tags": ["neutral", "lightly_amused"],
+    "priority_for_master": 0
+  },
+  {
+    "id": "earth_analogy",
+    "topic": "small_talk",
+    "context_tags": ["guest"],
+    "response_type": "short",
+    "tone_tags": ["observational"],
+    "content": "Your 'internet' appears much like a chaotic HoloNet… though with fewer regulations. Disturbing.",
+    "notes": "In-universe analogy to Earth technology",
+    "keywords": ["Earth", "internet", "analogy", "HoloNet"],
+    "mood_tags": ["observant", "curious"],
+    "priority_for_master": 0
+  }
+]

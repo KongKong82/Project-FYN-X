@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "entries": [
+    {
+      "id": "example_entry_001",
+      "type": "official",
+      "era": "Imperial",
+      "tags": ["example", "template"],
+      "confidence": "high",
+      "content": "This is a placeholder archival entry used to validate the knowledge base structure."
+    }
+  ]
+}

@@ -14,13 +14,13 @@ FYN-X uses **Retrieval-Augmented Generation (RAG)** to:
 
 ```
 ┌──────────────────────────────────────────────────────┐
-│                  USER INTERACTION                     │
+│                  USER INTERACTION                    │
 │  Voice (future) → Text Input → Tag Extraction        │
 │  Camera (future) → Face Recognition → Identity       │
 └─────────────────────┬────────────────────────────────┘
                       ↓
 ┌──────────────────────────────────────────────────────┐
-│               MEMORY RETRIEVAL (RAG)                  │
+│               MEMORY RETRIEVAL (RAG)                 │
 │  1. Extract tags from user input                     │
 │  2. Search memory database for relevant past talks   │
 │  3. Inject memories into LLM context                 │
@@ -33,7 +33,7 @@ FYN-X uses **Retrieval-Augmented Generation (RAG)** to:
 └─────────────────────┬────────────────────────────────┘
                       ↓
 ┌──────────────────────────────────────────────────────┐
-│              MEMORY PERSISTENCE                       │
+│              MEMORY PERSISTENCE                      │
 │  • Log conversation turns                            │
 │  • Extract topics, names, activities                 │
 │  • Save to JSON database when session ends           │
@@ -76,7 +76,7 @@ cd fynx
 
 2. Create the Ollama model:
 ```bash
-ollama create FYN-X-02 -f FYN-X.modelfile
+ollama create FYN-X -f FYN-X.modelfile
 ```
 
 3. Run FYN-X:

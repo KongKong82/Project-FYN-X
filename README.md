@@ -342,4 +342,4 @@ Personal project - use as you wish!
 
 ---
 
-*"I am FYN-X, protocol droid and personal archivist. Your memories are safe with me, Master Riley."*
+*"I am FYN-X, protocol droid and personal archivist."*

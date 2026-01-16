@@ -18,7 +18,7 @@ ollama --version
 From the `fynx` directory:
 
 ```bash
-ollama create FYN-X-02 -f FYN-X.modelfile
+ollama create FYN-X -f FYN-X.modelfile
 ```
 
 You should see output like:
@@ -35,7 +35,7 @@ Verify the model was created:
 ollama list
 ```
 
-You should see `FYN-X-02` in the list.
+You should see `FYN-X` in the list.
 
 ## Step 3: Test the Components
 
@@ -151,8 +151,8 @@ Summary: User: Hey FYN-X, I just got back from lunch...
 - Try running `ollama list` in a new terminal
 - On Windows, you may need to restart your terminal after installation
 
-### "Model FYN-X-02 not found"
-- Run `ollama create FYN-X-02 -f FYN-X.modelfile` again
+### "Model FYN-X not found"
+- Run `ollama create FYN-X -f FYN-X.modelfile` again
 - Check that you're in the `fynx` directory
 - Verify the `FYN-X.modelfile` exists
 
@@ -211,7 +211,7 @@ Edit `data/memories.json` and add entries manually (advanced users only!)
 ### Change Models
 Edit `FYNX_run.py` and change:
 ```python
-MODEL_NAME = "FYN-X-02"  # Change to your model name
+MODEL_NAME = "FYN-X"  # Change to your model name
 ```
 
 ---

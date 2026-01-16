@@ -1,15 +1,19 @@
 """
 FYN-X: Personal Memory-Enhanced Conversational Droid
-Main execution script with RAG-based memory retrieval.
+Main execution script with RAG-based memory retrieval and streaming output.
 """
 
 import subprocess
+import sys
 from pathlib import Path
+from typing import Optional, Callable
 
 from src.memory import MemoryManager, ConversationSession
 from src.tag_extraction import extract_tags
 from src.search import format_memories_for_prompt
 from src.face_recognition_module import FaceRecognizer, get_speaker_identity
+from src.streaming import StreamingOutputHandler, create_sentence_chunker
+from src.network import NetworkPublisher, ROS2Publisher, create_network_callback, create_ros2_callback
 
 
 MODEL_NAME = "FYN-X-02"  # Ollama model name
@@ -17,18 +21,53 @@ MEMORY_SEARCH_LIMIT = 3  # Number of memories to inject into prompt
 MIN_TURNS_TO_SAVE = 4    # Minimum conversation turns before saving
 AUTO_SAVE_INTERVAL = 10   # Save every N turns
 
+# Network configuration
+ENABLE_NETWORK = False    # Set to True to enable network publishing
+NETWORK_HOST = "raspberrypi.local"  # or IP address like "192.168.1.100"
+NETWORK_PORT = 5555
+
+# ROS2 configuration  
+ENABLE_ROS2 = False       # Set to True to enable ROS2 publishing
+ROS2_TOPIC = "/fynx/tts_input"
+
 
 class FynxRunner:
-    """Main application controller for FYN-X."""
+    """Main application controller for FYN-X with streaming support."""
     
-    def __init__(self, use_face_recognition: bool = False):
+    def __init__(self, use_face_recognition: bool = False, 
+                 enable_streaming: bool = True,
+                 enable_network: bool = ENABLE_NETWORK,
+                 enable_ros2: bool = ENABLE_ROS2):
         self.memory_manager = MemoryManager()
         self.face_recognizer = FaceRecognizer() if use_face_recognition else None
         self.current_session: ConversationSession = None
         self.turn_counter = 0
+        self.enable_streaming = enable_streaming
+        
+        # Initialize network publishers
+        self.network_publisher = None
+        self.ros2_publisher = None
+        
+        if enable_network:
+            self.network_publisher = NetworkPublisher(NETWORK_HOST, NETWORK_PORT)
+            if not self.network_publisher.connect():
+                print("[WARNING] Network publishing disabled due to connection failure")
+                self.network_publisher = None
+        
+        if enable_ros2:
+            self.ros2_publisher = ROS2Publisher(ROS2_TOPIC)
+            if not self.ros2_publisher.initialize():
+                print("[WARNING] ROS2 publishing disabled due to initialization failure")
+                self.ros2_publisher = None
         
         print("=" * 60)
         print("FYN-X PERSONAL MEMORY SYSTEM")
+        if enable_streaming:
+            print("(Streaming Mode Enabled)")
+        if self.network_publisher:
+            print(f"(Network: {NETWORK_HOST}:{NETWORK_PORT})")
+        if self.ros2_publisher:
+            print(f"(ROS2: {ROS2_TOPIC})")
         print("=" * 60)
         self._print_stats()
         print()
@@ -136,9 +175,89 @@ class FynxRunner:
         
         return "\n".join(parts)
     
+    def _create_output_callback(self) -> Callable[[str], None]:
+        """Create callback for handling output chunks."""
+        callbacks = []
+        
+        # Always print to console
+        def console_callback(chunk: str):
+            print(chunk, end='', flush=True)
+        callbacks.append(console_callback)
+        
+        # Add network publisher if enabled
+        if self.network_publisher:
+            callbacks.append(create_network_callback(self.network_publisher))
+        
+        # Add ROS2 publisher if enabled
+        if self.ros2_publisher:
+            callbacks.append(create_ros2_callback(self.ros2_publisher))
+        
+        # Create combined callback
+        def combined_callback(chunk: str):
+            for callback in callbacks:
+                try:
+                    callback(chunk)
+                except Exception as e:
+                    print(f"\n[ERROR in callback]: {e}")
+        
+        return combined_callback
+    
+    def run_ollama_streaming(self, prompt: str) -> str:
+        """
+        Execute Ollama model with streaming output.
+        
+        Args:
+            prompt: Full prompt text
+            
+        Returns:
+            Model response
+        """
+        try:
+            # Start Ollama process
+            process = subprocess.Popen(
+                ["ollama", "run", MODEL_NAME],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                bufsize=1  # Line buffered
+            )
+            
+            # Send prompt
+            process.stdin.write(prompt)
+            process.stdin.close()
+            
+            # Create output callback (with sentence chunking for better TTS)
+            output_callback = self._create_output_callback()
+            sentence_callback = create_sentence_chunker(output_callback)
+            
+            # Create streaming handler
+            handler = StreamingOutputHandler(chunk_callback=sentence_callback)
+            
+            # Process stream
+            response = handler.process_stream(process)
+            
+            # Flush any remaining buffered text
+            if hasattr(sentence_callback, 'flush'):
+                sentence_callback.flush()
+            
+            # Signal completion to publishers
+            if self.network_publisher:
+                self.network_publisher.publish_complete()
+            if self.ros2_publisher:
+                self.ros2_publisher.publish_complete()
+            
+            return response.strip()
+            
+        except FileNotFoundError:
+            return "[ERROR] Ollama not found. Please install Ollama and ensure it's in your PATH."
+        except Exception as e:
+            return f"[ERROR] {str(e)}"
+    
     def run_ollama(self, prompt: str) -> str:
         """
-        Execute Ollama model with prompt.
+        Execute Ollama model (non-streaming fallback).
         
         Args:
             prompt: Full prompt text
@@ -213,8 +332,11 @@ class FynxRunner:
         # Build prompt with memory context
         prompt = self.build_prompt(user_input)
         
-        # Get response from model
-        response = self.run_ollama(prompt)
+        # Get response from model (with streaming if enabled)
+        if self.enable_streaming:
+            response = self.run_ollama_streaming(prompt)
+        else:
+            response = self.run_ollama(prompt)
         
         # Add response to session
         self.current_session.add_turn('fynx', response)
@@ -237,7 +359,7 @@ class FynxRunner:
         
         while True:
             try:
-                user_input = input("You: ").strip()
+                user_input = input("\nYou: ").strip()
                 
                 if not user_input:
                     continue
@@ -253,10 +375,14 @@ class FynxRunner:
                     continue
                 
                 # Process normal conversation turn
+                print("\nFYN-X: ", end='', flush=True)
                 response = self.process_turn(user_input)
                 
-                # Display response
-                print(f"\nFYN-X: {response}\n")
+                # Response already printed by streaming
+                if not self.enable_streaming:
+                    print(response)
+                
+                print()  # Extra newline for readability
                 
             except KeyboardInterrupt:
                 print("\n\nInterrupted. Saving conversation...")
@@ -264,10 +390,21 @@ class FynxRunner:
                 break
             except Exception as e:
                 print(f"\n[ERROR] {str(e)}\n")
+        
+        # Cleanup publishers
+        if self.network_publisher:
+            self.network_publisher.disconnect()
+        if self.ros2_publisher:
+            self.ros2_publisher.shutdown()
 
 
 def main():
     """Entry point."""
+    # Parse command line arguments
+    enable_network = "--network" in sys.argv
+    enable_ros2 = "--ros2" in sys.argv
+    disable_streaming = "--no-streaming" in sys.argv
+    
     # Check if Ollama is available
     try:
         subprocess.run(["ollama", "list"], capture_output=True, check=True)
@@ -277,7 +414,12 @@ def main():
         return
     
     # Initialize and run
-    runner = FynxRunner(use_face_recognition=False)
+    runner = FynxRunner(
+        use_face_recognition=False,
+        enable_streaming=not disable_streaming,
+        enable_network=enable_network,
+        enable_ros2=enable_ros2
+    )
     runner.run_interactive()
 
 

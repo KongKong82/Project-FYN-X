@@ -16,7 +16,7 @@ from src.streaming import StreamingOutputHandler, create_sentence_chunker
 from src.network import NetworkPublisher, ROS2Publisher, create_network_callback, create_ros2_callback
 
 
-MODEL_NAME = "FYN-X-02"  # Ollama model name
+MODEL_NAME = "FYN-X"  # Ollama model name
 MEMORY_SEARCH_LIMIT = 3  # Number of memories to inject into prompt
 MIN_TURNS_TO_SAVE = 4    # Minimum conversation turns before saving
 AUTO_SAVE_INTERVAL = 10   # Save every N turns

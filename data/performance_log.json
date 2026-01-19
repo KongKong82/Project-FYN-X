@@ -1,0 +1,481 @@
+{
+  "sessions": [
+    {
+      "session_timestamp": "2026-01-17T15:28:32.976391",
+      "total_duration_ms": 271.46,
+      "module_count": 3,
+      "modules": [
+        {
+          "module": "test_module_1",
+          "duration_ms": 100.92,
+          "timestamp": "2026-01-17T15:28:32.805847",
+          "metadata": {
+            "size": 100
+          }
+        },
+        {
+          "module": "test_module_2",
+          "duration_ms": 50.24,
+          "timestamp": "2026-01-17T15:28:32.856090",
+          "metadata": {}
+        },
+        {
+          "module": "test_module_1",
+          "duration_ms": 120.3,
+          "timestamp": "2026-01-17T15:28:32.976391",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "session_timestamp": "2026-01-17T15:28:33.180321",
+      "total_duration_ms": 200.5,
+      "module_count": 1,
+      "modules": [
+        {
+          "module": "decorated_function",
+          "duration_ms": 200.5,
+          "timestamp": "2026-01-17T15:28:33.180321",
+          "metadata": {}
+        }
+      ]
+    },
+    {
+      "session_timestamp": "2026-01-17T15:43:34.723851",
+      "total_duration_ms": 750926.46,
+      "module_count": 61,
+      "modules": [
+        {
+          "module": "prompt_building",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:31:16.789526",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_startup",
+          "duration_ms": 2.99,
+          "timestamp": "2026-01-17T15:31:16.792519",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_inference",
+          "duration_ms": 7760.62,
+          "timestamp": "2026-01-17T15:31:24.553140",
+          "metadata": {
+            "prompt_length": 205
+          }
+        },
+        {
+          "module": "prompt_building",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:31:34.802147",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_startup",
+          "duration_ms": 2.99,
+          "timestamp": "2026-01-17T15:31:34.805137",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_inference",
+          "duration_ms": 1342.91,
+          "timestamp": "2026-01-17T15:31:36.148049",
+          "metadata": {
+            "prompt_length": 292
+          }
+        },
+        {
+          "module": "prompt_building",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:31:50.498563",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_startup",
+          "duration_ms": 1.98,
+          "timestamp": "2026-01-17T15:31:50.500538",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_inference",
+          "duration_ms": 2041.25,
+          "timestamp": "2026-01-17T15:31:52.542781",
+          "metadata": {
+            "prompt_length": 370
+          }
+        },
+        {
+          "module": "prompt_building",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:32:04.714932",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_startup",
+          "duration_ms": 2.0,
+          "timestamp": "2026-01-17T15:32:04.716930",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_inference",
+          "duration_ms": 4163.91,
+          "timestamp": "2026-01-17T15:32:08.880839",
+          "metadata": {
+            "prompt_length": 449
+          }
+        },
+        {
+          "module": "prompt_building",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:32:42.155347",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_startup",
+          "duration_ms": 2.0,
+          "timestamp": "2026-01-17T15:32:42.157342",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_inference",
+          "duration_ms": 5777.64,
+          "timestamp": "2026-01-17T15:32:47.934978",
+          "metadata": {
+            "prompt_length": 797
+          }
+        },
+        {
+          "module": "tag_extraction",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:33:09.300372",
+          "metadata": {
+            "input_length": 10
+          }
+        },
+        {
+          "module": "memory_search",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:33:09.300372",
+          "metadata": {
+            "tag_count": 1
+          }
+        },
+        {
+          "module": "prompt_building",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:33:09.300372",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_startup",
+          "duration_ms": 1.99,
+          "timestamp": "2026-01-17T15:33:09.302360",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_inference",
+          "duration_ms": 6094.39,
+          "timestamp": "2026-01-17T15:33:15.396748",
+          "metadata": {
+            "prompt_length": 1006
+          }
+        },
+        {
+          "module": "tag_extraction",
+          "duration_ms": 1.0,
+          "timestamp": "2026-01-17T15:33:43.011969",
+          "metadata": {
+            "input_length": 34
+          }
+        },
+        {
+          "module": "memory_search",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:33:43.011969",
+          "metadata": {
+            "tag_count": 2
+          }
+        },
+        {
+          "module": "prompt_building",
+          "duration_ms": 1.0,
+          "timestamp": "2026-01-17T15:33:43.011969",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_startup",
+          "duration_ms": 1.99,
+          "timestamp": "2026-01-17T15:33:43.013961",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_inference",
+          "duration_ms": 9011.83,
+          "timestamp": "2026-01-17T15:33:52.025792",
+          "metadata": {
+            "prompt_length": 1155
+          }
+        },
+        {
+          "module": "tag_extraction",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:34:35.332538",
+          "metadata": {
+            "input_length": 73
+          }
+        },
+        {
+          "module": "memory_search",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:34:35.332538",
+          "metadata": {
+            "tag_count": 5
+          }
+        },
+        {
+          "module": "prompt_building",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:34:35.332538",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_startup",
+          "duration_ms": 1.99,
+          "timestamp": "2026-01-17T15:34:35.334531",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_inference",
+          "duration_ms": 6460.68,
+          "timestamp": "2026-01-17T15:34:41.795208",
+          "metadata": {
+            "prompt_length": 1527
+          }
+        },
+        {
+          "module": "tag_extraction",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:35:12.396892",
+          "metadata": {
+            "input_length": 69
+          }
+        },
+        {
+          "module": "memory_search",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:35:12.396892",
+          "metadata": {
+            "tag_count": 7
+          }
+        },
+        {
+          "module": "prompt_building",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:35:12.396892",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_startup",
+          "duration_ms": 1.99,
+          "timestamp": "2026-01-17T15:35:12.398885",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_inference",
+          "duration_ms": 7385.73,
+          "timestamp": "2026-01-17T15:35:19.784613",
+          "metadata": {
+            "prompt_length": 1590
+          }
+        },
+        {
+          "module": "tag_extraction",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:35:59.604884",
+          "metadata": {
+            "input_length": 141
+          }
+        },
+        {
+          "module": "memory_search",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:35:59.604884",
+          "metadata": {
+            "tag_count": 11
+          }
+        },
+        {
+          "module": "prompt_building",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:35:59.604884",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_startup",
+          "duration_ms": 2.97,
+          "timestamp": "2026-01-17T15:35:59.607857",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_inference",
+          "duration_ms": 9216.09,
+          "timestamp": "2026-01-17T15:36:08.823949",
+          "metadata": {
+            "prompt_length": 1379
+          }
+        },
+        {
+          "module": "tag_extraction",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:38:55.391756",
+          "metadata": {
+            "input_length": 432
+          }
+        },
+        {
+          "module": "memory_search",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:38:55.391756",
+          "metadata": {
+            "tag_count": 29
+          }
+        },
+        {
+          "module": "prompt_building",
+          "duration_ms": 0.99,
+          "timestamp": "2026-01-17T15:38:55.391756",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_startup",
+          "duration_ms": 1.99,
+          "timestamp": "2026-01-17T15:38:55.393749",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_inference",
+          "duration_ms": 15659.28,
+          "timestamp": "2026-01-17T15:39:11.053028",
+          "metadata": {
+            "prompt_length": 2345
+          }
+        },
+        {
+          "module": "tag_extraction",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:40:04.543592",
+          "metadata": {
+            "input_length": 56
+          }
+        },
+        {
+          "module": "memory_search",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:40:04.543592",
+          "metadata": {
+            "tag_count": 6
+          }
+        },
+        {
+          "module": "prompt_building",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:40:04.543592",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_startup",
+          "duration_ms": 1.99,
+          "timestamp": "2026-01-17T15:40:04.545584",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_inference",
+          "duration_ms": 4150.8,
+          "timestamp": "2026-01-17T15:40:08.696381",
+          "metadata": {
+            "prompt_length": 2713
+          }
+        },
+        {
+          "module": "tag_extraction",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:40:45.279823",
+          "metadata": {
+            "input_length": 28
+          }
+        },
+        {
+          "module": "memory_search",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:40:45.279823",
+          "metadata": {
+            "tag_count": 1
+          }
+        },
+        {
+          "module": "prompt_building",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:40:45.279823",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_startup",
+          "duration_ms": 2.08,
+          "timestamp": "2026-01-17T15:40:45.281901",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_inference",
+          "duration_ms": 11264.75,
+          "timestamp": "2026-01-17T15:40:56.547573",
+          "metadata": {
+            "prompt_length": 2056
+          }
+        },
+        {
+          "module": "tag_extraction",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:42:22.440945",
+          "metadata": {
+            "input_length": 203
+          }
+        },
+        {
+          "module": "memory_search",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:42:22.440945",
+          "metadata": {
+            "tag_count": 15
+          }
+        },
+        {
+          "module": "prompt_building",
+          "duration_ms": 0.0,
+          "timestamp": "2026-01-17T15:42:22.440945",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_startup",
+          "duration_ms": 2.17,
+          "timestamp": "2026-01-17T15:42:22.443112",
+          "metadata": {}
+        },
+        {
+          "module": "ollama_inference",
+          "duration_ms": 2742.21,
+          "timestamp": "2026-01-17T15:42:25.185831",
+          "metadata": {
+            "prompt_length": 2230
+          }
+        },
+        {
+          "module": "save_memory",
+          "duration_ms": 1.92,
+          "timestamp": "2026-01-17T15:43:34.723269",
+          "metadata": {}
+        }
+      ]
+    }
+  ]
+}

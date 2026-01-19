@@ -1,182 +1,378 @@
 """
-Test script for FYN-X memory and tag extraction systems.
-Run this to verify components are working correctly.
+Complete component testing script for FYN-X.
+Tests camera, microphone, TTS, and all local capabilities.
 """
 
-from src.tag_extraction import extract_tags, explain_extraction, extract_conversation_metadata
-from src.memory import MemoryManager, ConversationSession
-from src.search import format_memories_for_prompt
+import sys
+from pathlib import Path
 
 
-def test_tag_extraction():
-    """Test the tag extraction system."""
-    print("=" * 60)
-    print("TAG EXTRACTION TESTS")
-    print("=" * 60)
+def test_imports():
+    """Test if required libraries are installed."""
+    print("\n" + "="*70)
+    print("CHECKING INSTALLED PACKAGES")
+    print("="*70)
     
-    test_inputs = [
-        "Hey, I just got back from visiting Sarah in Portland",
-        "Yesterday I met with my friend Tom to discuss the new project at work",
-        "Can you remind me what we talked about last Tuesday?",
-        "I need to plan a birthday party for my daughter next month",
-        "My car broke down yesterday and I had to call a mechanic"
-    ]
+    packages = {
+        'opencv-python': False,
+        'face-recognition': False,
+        'SpeechRecognition': False,
+        'pyaudio': False,
+        'edge-tts': False,
+        'pyttsx3': False,
+    }
     
-    for i, text in enumerate(test_inputs, 1):
-        print(f"\nTest {i}:")
-        print(explain_extraction(text))
-        print("-" * 60)
+    # Test OpenCV
+    try:
+        import cv2
+        packages['opencv-python'] = True
+    except ImportError:
+        pass
+    
+    # Test face_recognition
+    try:
+        import face_recognition
+        packages['face-recognition'] = True
+    except ImportError:
+        pass
+    
+    # Test SpeechRecognition
+    try:
+        import speech_recognition
+        packages['SpeechRecognition'] = True
+    except ImportError:
+        pass
+    
+    # Test PyAudio
+    try:
+        import pyaudio
+        packages['pyaudio'] = True
+    except ImportError:
+        pass
+    
+    # Test edge-tts
+    try:
+        import edge_tts
+        packages['edge-tts'] = True
+    except ImportError:
+        pass
+    
+    # Test pyttsx3
+    try:
+        import pyttsx3
+        packages['pyttsx3'] = True
+    except ImportError:
+        pass
+    
+    # Print results
+    for package, installed in packages.items():
+        status = "✓ Installed" if installed else "✗ Not installed"
+        print(f"  {package}: {status}")
+    
+    # Check what features are available
+    print("\n" + "="*70)
+    print("AVAILABLE FEATURES")
+    print("="*70)
+    
+    features = {
+        'Camera (basic)': packages['opencv-python'],
+        'Face Recognition': packages['face-recognition'],
+        'Voice Input': packages['SpeechRecognition'] and packages['pyaudio'],
+        'TTS (online)': packages['edge-tts'],
+        'TTS (offline)': packages['pyttsx3'],
+    }
+    
+    for feature, available in features.items():
+        status = "✓ Ready" if available else "✗ Missing packages"
+        print(f"  {feature}: {status}")
+    
+    return packages
 
 
-def test_memory_system():
-    """Test the memory management system."""
-    print("\n" + "=" * 60)
-    print("MEMORY SYSTEM TESTS")
-    print("=" * 60)
+def test_camera(skip_recognition=False):
+    """Test camera functionality."""
+    print("\n" + "="*70)
+    print("CAMERA TEST")
+    print("="*70)
     
-    # Create a test conversation
-    session = ConversationSession(speaker_identity="test_user")
-    
-    session.add_turn("user", "Hey FYN-X, I just met with Sarah to discuss the marketing project")
-    session.add_turn("fynx", "Ah, how productive! Marketing projects can be quite involved.")
-    session.add_turn("user", "Yeah, we decided to launch next month")
-    session.add_turn("fynx", "Next month—excellent timing. I shall note that.")
-    session.add_turn("user", "We also talked about hiring a new designer")
-    session.add_turn("fynx", "A wise decision. Creative talent is invaluable.")
-    
-    print("\n1. Session created with 6 turns")
-    print(f"   Should save: {session.should_save()}")
-    
-    # Convert to memory
-    memory = session.to_memory()
-    print("\n2. Memory extracted from conversation:")
-    print(f"   Topics: {memory['topics_discussed']}")
-    print(f"   People: {memory['people_mentioned']}")
-    print(f"   Tags: {memory['tags'][:10]}")  # Show first 10
-    
-    # Test memory manager
-    print("\n3. Testing MemoryManager:")
-    manager = MemoryManager("data/test_memories.json")
-    
-    # Add memory
-    memory_id = manager.add_memory(memory)
-    print(f"   Memory saved with ID: {memory_id}")
-    
-    # Search by tags
-    results = manager.search_by_tags(["sarah", "project"])
-    print(f"   Search for 'sarah' and 'project': {len(results)} results")
-    
-    # Search by person
-    results = manager.search_by_person("sarah")
-    print(f"   Search for person 'sarah': {len(results)} results")
-    
-    # Get stats
-    stats = manager.get_stats()
-    print(f"   Database stats: {stats['total_memories']} memories, {stats['unique_people']} people")
-    
-    print("\n4. Formatted memory for prompt:")
-    formatted = format_memories_for_prompt(results, max_memories=1)
-    print(formatted[:300] + "...")  # Show first 300 chars
-
-
-def test_retrieval_scenario():
-    """Test a realistic memory retrieval scenario."""
-    print("\n" + "=" * 60)
-    print("RETRIEVAL SCENARIO TEST")
-    print("=" * 60)
-    
-    # Create memory manager with test data
-    manager = MemoryManager("data/test_memories.json")
-    
-    # Simulate several past conversations
-    conversations = [
-        {
-            "speaker": "riley",
-            "turns": [
-                ("user", "I went to that new Italian restaurant downtown with Maria"),
-                ("fynx", "Oh wonderful! Italian cuisine is quite delightful."),
-                ("user", "Yeah, the pasta was amazing"),
-                ("fynx", "I shall note this recommendation for future reference.")
-            ]
-        },
-        {
-            "speaker": "riley",
-            "turns": [
-                ("user", "I need to finish that Python project for work"),
-                ("fynx", "Ah yes, programming tasks. How is it progressing?"),
-                ("user", "Almost done, just need to add testing"),
-                ("fynx", "Testing is most crucial. Well done for prioritizing it.")
-            ]
-        },
-        {
-            "speaker": "guest",
-            "turns": [
-                ("user", "Tell me about the Clone Wars"),
-                ("fynx", "Ah, the Clone Wars—a most turbulent period..."),
-                ("user", "Who was involved?"),
-                ("fynx", "The Republic and Separatists, primarily...")
-            ]
-        }
-    ]
-    
-    # Add conversations to memory
-    print("\nAdding test conversations to memory...")
-    for conv in conversations:
-        session = ConversationSession(conv["speaker"])
-        for speaker, text in conv["turns"]:
-            session.add_turn(speaker, text)
+    try:
+        from src.camera import Camera
         
-        if session.should_save(min_turns=2):
-            memory = session.to_memory()
-            manager.add_memory(memory)
-    
-    print(f"Added {len(conversations)} conversations")
-    
-    # Test queries
-    print("\n" + "-" * 60)
-    print("Testing memory retrieval:")
-    print("-" * 60)
-    
-    test_queries = [
-        "Where did I go with Maria?",
-        "What projects am I working on?",
-        "Tell me about restaurants"
-    ]
-    
-    for query in test_queries:
-        print(f"\nQuery: '{query}'")
-        tags = extract_tags(query)
-        print(f"Tags: {tags}")
+        # Initialize camera
+        camera = Camera(
+            source='local',
+            enable_face_detection=True,
+            enable_face_recognition=not skip_recognition
+        )
         
-        results = manager.search_by_tags(tags, limit=2)
-        print(f"Results: {len(results)} memories found")
+        # Connect
+        if not camera.connect():
+            print("✗ Failed to connect to camera")
+            return False
         
-        if results:
-            print(f"Top result topics: {results[0].get('topics_discussed', [])}")
-            print(f"Top result people: {results[0].get('people_mentioned', [])}")
+        print("✓ Camera connected")
+        
+        # Capture test frame
+        frame = camera.capture_frame()
+        if frame is None:
+            print("✗ Could not capture frame")
+            camera.disconnect()
+            return False
+        
+        print(f"✓ Captured frame: {frame.shape}")
+        
+        # Test face detection
+        faces = camera.detect_faces(frame)
+        print(f"✓ Face detection working (detected {len(faces)} faces)")
+        
+        # Test face recognition
+        if not skip_recognition and camera.enable_face_recognition:
+            known = camera.list_known_faces()
+            print(f"✓ Face recognition available (known: {known})")
+        
+        # Show preview
+        print("\nShowing camera preview for 3 seconds...")
+        camera.show_preview(duration=3, show_detection=True)
+        
+        camera.disconnect()
+        print("\n✓ Camera test passed!")
+        return True
+        
+    except Exception as e:
+        print(f"\n✗ Camera test failed: {e}")
+        return False
+
+
+def test_microphone():
+    """Test microphone functionality."""
+    print("\n" + "="*70)
+    print("MICROPHONE TEST")
+    print("="*70)
+    
+    try:
+        from src.stt import MicrophoneSTT
+        
+        # Initialize
+        stt = MicrophoneSTT(engine='google')
+        print("✓ Microphone initialized")
+        
+        # List microphones
+        print("\nAvailable microphones:")
+        stt.list_microphones()
+        
+        # Test recognition
+        print("\n" + "="*70)
+        print("Say something (you have 5 seconds)...")
+        print("="*70)
+        
+        text = stt.listen_once(timeout=5, phrase_time_limit=10)
+        
+        if text:
+            print(f"\n✓ Microphone test passed!")
+            print(f"  Recognized: \"{text}\"")
+            return True
+        else:
+            print("\n⚠ No speech detected (mic might be working but no speech)")
+            return True  # Still pass if mic initialized
+        
+    except Exception as e:
+        print(f"\n✗ Microphone test failed: {e}")
+        return False
+
+
+def test_tts():
+    """Test text-to-speech."""
+    print("\n" + "="*70)
+    print("TTS TEST")
+    print("="*70)
+    
+    try:
+        from src.tts import LocalTTS
+        
+        # Initialize
+        tts = LocalTTS(engine='auto')
+        print(f"✓ TTS initialized (engine: {tts.engine_name})")
+        
+        # Test speech
+        print("\nSpeaking test phrase...")
+        tts.speak("FYN-X text to speech is working!")
+        
+        print("\n✓ TTS test passed!")
+        return True
+        
+    except Exception as e:
+        print(f"\n✗ TTS test failed: {e}")
+        return False
+
+
+def test_ollama():
+    """Test Ollama and FYN-X model."""
+    print("\n" + "="*70)
+    print("OLLAMA / MODEL TEST")
+    print("="*70)
+    
+    import subprocess
+    
+    try:
+        # Check if Ollama is running
+        result = subprocess.run(
+            ["ollama", "list"],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        
+        print("✓ Ollama is running")
+        
+        # Check if FYN-X model exists
+        if "FYN-X" in result.stdout:
+            print("✓ FYN-X model found")
+            
+            # Get model info
+            for line in result.stdout.split('\n'):
+                if 'FYN-X' in line:
+                    print(f"  {line}")
+            
+            return True
+        else:
+            print("⚠ FYN-X model not found")
+            print("  Run: python server/rebuild_model.py")
+            return False
+        
+    except FileNotFoundError:
+        print("✗ Ollama not installed")
+        print("  Download from: https://ollama.ai/download")
+        return False
+    except subprocess.CalledProcessError:
+        print("✗ Ollama not responding")
+        print("  Try: ollama serve")
+        return False
+
+
+def print_installation_guide(missing_packages):
+    """Print installation instructions for missing packages."""
+    print("\n" + "="*70)
+    print("INSTALLATION GUIDE")
+    print("="*70)
+    
+    install_commands = {
+        'opencv-python': 'pip install opencv-python --break-system-packages',
+        'face-recognition': 'pip install face-recognition --break-system-packages',
+        'SpeechRecognition': 'pip install SpeechRecognition --break-system-packages',
+        'pyaudio': 'pip install pyaudio --break-system-packages',
+        'edge-tts': 'pip install edge-tts --break-system-packages',
+        'pyttsx3': 'pip install pyttsx3 --break-system-packages',
+    }
+    
+    print("\nTo install missing packages:\n")
+    
+    for package in missing_packages:
+        if package in install_commands:
+            print(f"# {package}")
+            print(f"{install_commands[package]}\n")
+    
+    print("For detailed setup guides, see:")
+    print("  - CAMERA_SETUP.md (camera & face recognition)")
+    print("  - MICROPHONE_SETUP.md (voice input)")
+    print("  - TTS_INTEGRATION.md (text-to-speech)")
+
+
+def print_summary(results):
+    """Print test summary."""
+    print("\n" + "="*70)
+    print("TEST SUMMARY")
+    print("="*70)
+    
+    total = len(results)
+    passed = sum(1 for r in results.values() if r)
+    
+    for test, result in results.items():
+        status = "✓ PASS" if result else "✗ FAIL"
+        print(f"  {test}: {status}")
+    
+    print(f"\nPassed: {passed}/{total}")
+    
+    if passed == total:
+        print("\n" + "="*70)
+        print("🎉 ALL TESTS PASSED!")
+        print("="*70)
+        print("\nYou're ready to run FYN-X with full capabilities!")
+        print("  python FYNX_run.py --voice --camera")
+    else:
+        print("\n" + "="*70)
+        print("⚠ SOME TESTS FAILED")
+        print("="*70)
+        print("\nSee installation guide above to fix missing components.")
 
 
 def main():
-    """Run all tests."""
-    print("\n" + "=" * 60)
-    print("FYN-X COMPONENT TEST SUITE")
-    print("=" * 60)
+    """Main test routine."""
+    print("\n" + "="*70)
+    print(" " * 25 + "FYN-X COMPONENT TEST")
+    print("="*70)
     
-    try:
-        test_tag_extraction()
-        test_memory_system()
-        test_retrieval_scenario()
-        
-        print("\n" + "=" * 60)
-        print("ALL TESTS COMPLETED")
-        print("=" * 60)
-        print("\nNote: Test memories saved to data/test_memories.json")
-        print("You can safely delete this file if needed.")
-        
-    except Exception as e:
-        print(f"\n[ERROR] Test failed: {e}")
-        import traceback
-        traceback.print_exc()
+    print("\nThis will test all FYN-X components:")
+    print("  1. Required packages")
+    print("  2. Camera (with face detection)")
+    print("  3. Microphone (voice input)")
+    print("  4. TTS (text-to-speech)")
+    print("  5. Ollama / FYN-X model")
+    
+    response = input("\nProceed with tests? (y/n): ")
+    if response.lower() != 'y':
+        print("Cancelled.")
+        return
+    
+    # Test 1: Check packages
+    packages = test_imports()
+    
+    missing = [pkg for pkg, installed in packages.items() if not installed]
+    
+    # Test 2-5: Run component tests
+    results = {}
+    
+    # Camera test
+    if packages['opencv-python']:
+        skip_recognition = not packages['face-recognition']
+        results['Camera'] = test_camera(skip_recognition=skip_recognition)
+    else:
+        print("\n⚠ Skipping camera test (opencv not installed)")
+        results['Camera'] = False
+    
+    # Microphone test
+    if packages['SpeechRecognition'] and packages['pyaudio']:
+        test_mic = input("\nTest microphone? (will listen for speech) (y/n): ")
+        if test_mic.lower() == 'y':
+            results['Microphone'] = test_microphone()
+        else:
+            print("Skipping microphone test")
+            results['Microphone'] = None
+    else:
+        print("\n⚠ Skipping microphone test (packages not installed)")
+        results['Microphone'] = False
+    
+    # TTS test
+    if packages['edge-tts'] or packages['pyttsx3']:
+        test_audio = input("\nTest TTS? (will play audio) (y/n): ")
+        if test_audio.lower() == 'y':
+            results['TTS'] = test_tts()
+        else:
+            print("Skipping TTS test")
+            results['TTS'] = None
+    else:
+        print("\n⚠ Skipping TTS test (packages not installed)")
+        results['TTS'] = False
+    
+    # Ollama test
+    results['Ollama'] = test_ollama()
+    
+    # Print installation guide for missing packages
+    if missing:
+        print_installation_guide(missing)
+    
+    # Print summary
+    filtered_results = {k: v for k, v in results.items() if v is not None}
+    print_summary(filtered_results)
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@
 # Requires: Debian/Raspberry Pi OS (Bookworm or Trixie), internet connection
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/YOUR_GITHUB/FYN-X/main/FYN-X_Edge_Setup.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/KongKong82/Project-FYN-X/refs/heads/main/FYN-X_Edge_Setup.sh | bash
 #   — or —
 #   bash FYN-X_Edge_Setup.sh
 # =============================================================================
@@ -49,7 +49,7 @@ fi
 info "Architecture: $ARCH ✓"
 
 # Detect Pi model for any model-specific tuning
-PI_MODEL=$(cat /proc/device-tree/model 2>/dev/null || echo "Unknown")
+PI_MODEL=$(cat /proc/device-tree/model 2>/dev/null | tr -d '\0' || echo "Unknown")
 info "Detected: $PI_MODEL"
 
 # Flag if this is a Zero 2W (512MB RAM) so we use lighter settings
@@ -63,7 +63,34 @@ fi
 info "Updating package lists..."
 sudo apt-get update -qq
 
-# ── Step 2: Install Docker ────────────────────────────────────────────────────
+# ── Step 2: Install swap manager ─────────────────────────────────────────────
+# Needed on Pi Zero 2W and lean Pi OS images that don't include it by default
+if ! command -v dphys-swapfile &>/dev/null; then
+    info "Installing swap manager..."
+    sudo apt-get install -y -qq dphys-swapfile
+    success "Swap manager installed"
+else
+    success "Swap manager already installed"
+fi
+
+# ── Step 3: Configure swap ────────────────────────────────────────────────────
+SWAP_SIZE=1024
+if [[ "$IS_ZERO2W" == true ]]; then
+    SWAP_SIZE=512
+fi
+
+CURRENT_SWAP=$(grep CONF_SWAPSIZE /etc/dphys-swapfile 2>/dev/null | cut -d= -f2 || echo "0")
+if [[ "$CURRENT_SWAP" -ge "$SWAP_SIZE" ]] 2>/dev/null; then
+    success "Swap already configured (${CURRENT_SWAP}MB)"
+else
+    info "Configuring ${SWAP_SIZE}MB swap..."
+    sudo sed -i "s/CONF_SWAPSIZE=.*/CONF_SWAPSIZE=${SWAP_SIZE}/" /etc/dphys-swapfile
+    sudo dphys-swapfile setup
+    sudo dphys-swapfile swapon
+    success "Swap configured (${SWAP_SIZE}MB)"
+fi
+
+# ── Step 4: Install Docker ────────────────────────────────────────────────────
 if command -v docker &>/dev/null; then
     success "Docker already installed ($(docker --version | cut -d' ' -f3 | tr -d ','))"
 else
@@ -72,7 +99,7 @@ else
     success "Docker installed"
 fi
 
-# ── Step 3: Add user to required groups ──────────────────────────────────────
+# ── Step 5: Add user to required groups ──────────────────────────────────────
 info "Configuring user groups..."
 for group in docker video audio; do
     if groups "$USER" | grep -q "\b$group\b"; then
@@ -83,34 +110,28 @@ for group in docker video audio; do
     fi
 done
 
-# ── Step 4: Enable Docker on boot ────────────────────────────────────────────
+# ── Step 6: Fix Docker socket permissions ────────────────────────────────────
+# Ensures docker commands work in the current session without needing a reboot
+if [[ -S /var/run/docker.sock ]]; then
+    SOCK_GROUP=$(stat -c '%G' /var/run/docker.sock)
+    if ! id -nG "$USER" | grep -qw "$SOCK_GROUP"; then
+        info "Fixing Docker socket permissions for current session..."
+        sudo chmod 666 /var/run/docker.sock
+        success "Docker socket accessible"
+    else
+        # Fix anyway to be safe — harmless if already correct
+        sudo chmod 666 /var/run/docker.sock
+        success "Docker socket permissions OK"
+    fi
+fi
+
+# ── Step 7: Enable Docker on boot ────────────────────────────────────────────
 info "Enabling Docker service on boot..."
 sudo systemctl enable docker
 sudo systemctl start docker
 success "Docker service enabled"
 
-# ── Step 5: Enable swap ───────────────────────────────────────────────────────
-SWAP_SIZE=1024
-if [[ "$IS_ZERO2W" == true ]]; then
-    SWAP_SIZE=512
-fi
-
-if [[ -f /etc/dphys-swapfile ]]; then
-    CURRENT_SWAP=$(grep CONF_SWAPSIZE /etc/dphys-swapfile | cut -d= -f2)
-    if [[ "$CURRENT_SWAP" -ge "$SWAP_SIZE" ]] 2>/dev/null; then
-        success "Swap already configured (${CURRENT_SWAP}MB)"
-    else
-        info "Configuring ${SWAP_SIZE}MB swap..."
-        sudo sed -i "s/CONF_SWAPSIZE=.*/CONF_SWAPSIZE=${SWAP_SIZE}/" /etc/dphys-swapfile
-        sudo dphys-swapfile setup
-        sudo dphys-swapfile swapon
-        success "Swap configured (${SWAP_SIZE}MB)"
-    fi
-else
-    warning "dphys-swapfile not found — skipping swap configuration"
-fi
-
-# ── Step 6: Create project directory and config files ────────────────────────
+# ── Step 8: Create project directory and config files ────────────────────────
 info "Creating project directory at $PROJECT_DIR..."
 mkdir -p "$PROJECT_DIR/config"
 
@@ -165,19 +186,19 @@ services:
 EOF
 success "docker-compose.yml written"
 
-# ── Step 7: Pull the Docker image ─────────────────────────────────────────────
+# ── Step 9: Pull the Docker image ─────────────────────────────────────────────
 info "Pulling Docker image: $DOCKERHUB_IMAGE"
 info "This may take a few minutes on first run (~600MB)..."
 
-if groups "$USER" | grep -q "\bdocker\b"; then
+# Use sg to activate docker group in current session if it was just added
+if docker info &>/dev/null 2>&1; then
     docker pull "$DOCKERHUB_IMAGE"
 else
-    # User was just added to docker group this session — use sg to activate it
     sg docker -c "docker pull $DOCKERHUB_IMAGE"
 fi
 success "Image pulled"
 
-# ── Step 8: Install systemd service for auto-start on boot ───────────────────
+# ── Step 10: Install systemd service for auto-start on boot ──────────────────
 info "Installing systemd service..."
 sudo tee /etc/systemd/system/fynx-edge.service > /dev/null <<EOF
 [Unit]
@@ -203,7 +224,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable fynx-edge.service
 success "systemd service installed and enabled"
 
-# ── Step 9: Verify camera device ─────────────────────────────────────────────
+# ── Step 11: Verify camera device ────────────────────────────────────────────
 echo ""
 info "Checking for camera devices..."
 if ls /dev/video* &>/dev/null; then
@@ -230,9 +251,3 @@ echo -e "    cd $PROJECT_DIR && docker compose up"
 echo ""
 echo -e "  ${YELLOW}It will also start automatically on next boot.${NC}"
 echo ""
-
-if ! groups "$USER" | grep -q "\bdocker\b" 2>/dev/null; then
-    echo -e "  ${YELLOW}NOTE: Log out and back in (or reboot) for group changes to take effect.${NC}"
-    echo -e "  ${YELLOW}Or run: newgrp docker${NC}"
-    echo ""
-fi
